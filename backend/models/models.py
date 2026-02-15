@@ -38,6 +38,12 @@ class Job(db.Model):
     requirements = db.Column(db.Text, nullable=False)
     responsibilities = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='active')  # active, closed, draft
+    category = db.Column(db.String(50), default='技术人员')  # 管理, 技术人员, 保洁人员
+    priority = db.Column(db.Integer, default=99)  # 优先级，数字越小越靠前
+    position_count = db.Column(db.Integer, default=1)  # 招聘人数
+    category = db.Column(db.String(50), default='技术人员')  # 管理, 技术人员, 保洁人员
+    priority = db.Column(db.Integer, default=99)  # 优先级，数字越小越靠前
+    position_count = db.Column(db.Integer, default=1)  # 招聘人数
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -57,6 +63,9 @@ class Job(db.Model):
             'requirements': self.requirements,
             'responsibilities': self.responsibilities,
             'status': self.status,
+            'category': self.category,
+            'priority': self.priority,
+            'position_count': self.position_count,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'application_count': len(self.applications)

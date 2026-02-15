@@ -690,7 +690,7 @@
         let experienceCount = 0;
         let skillCount = 0;
         
-        // 加载职位列表
+        // 加载职位列表（按分类显示）
         async function loadJobs() {
             try {
                 const response = await fetch(`${API_URL}/jobs/?status=active`);
@@ -699,24 +699,59 @@
                 const jobsGrid = document.getElementById('jobsGrid');
                 jobsGrid.innerHTML = '';
                 
+                // 按category分组并按priority排序
+                const categories = {
+                    '管理': [],
+                    '技术人员': [],
+                    '保洁人员': []
+                };
+                
+                // 分组
                 data.jobs.forEach(job => {
-                    const jobCard = document.createElement('div');
-                    jobCard.className = 'job-card';
-                    jobCard.onclick = () => showJobDetail(job.id);
-                    
-                    jobCard.innerHTML = `
-                        <h3>${job.title}</h3>
-                        <div class="job-meta">
-                            <span>${job.department}</span>
-                            <span>${job.location}</span>
-                            <span>${job.job_type}</span>
-                            ${job.salary_range ? `<span>${job.salary_range}</span>` : ''}
-                        </div>
-                        <div class="job-description">${job.description}</div>
-                        <button class="btn btn-outline">查看详情并申请</button>
-                    `;
-                    
-                    jobsGrid.appendChild(jobCard);
+                    const category = job.category || '技术人员';
+                    if (categories[category]) {
+                        categories[category].push(job);
+                    }
+                });
+                
+                // 每个分类内按priority排序
+                Object.keys(categories).forEach(cat => {
+                    categories[cat].sort((a, b) => (a.priority || 99) - (b.priority || 99));
+                });
+                
+                // 按分类顺序显示
+                const categoryOrder = ['管理', '技术人员', '保洁人员'];
+                categoryOrder.forEach(category => {
+                    if (categories[category] && categories[category].length > 0) {
+                        // 添加分类标题
+                        const categoryTitle = document.createElement('div');
+                        categoryTitle.style.cssText = 'grid-column: 1 / -1; margin-top: 2rem; margin-bottom: 1rem;';
+                        categoryTitle.innerHTML = `<h2 style="color: #d65009; font-size: 1.8rem; border-bottom: 3px solid #d65009; padding-bottom: 0.5rem;">${category}</h2>`;
+                        jobsGrid.appendChild(categoryTitle);
+                        
+                        // 添加该分类下的职位
+                        categories[category].forEach(job => {
+                            const jobCard = document.createElement('div');
+                            jobCard.className = 'job-card';
+                            jobCard.onclick = () => showJobDetail(job.id);
+                            
+                            const positionCount = job.position_count ? ` ${job.position_count}名` : '';
+                            
+                            jobCard.innerHTML = `
+                                <h3>${job.title}${positionCount}</h3>
+                                <div class="job-meta">
+                                    <span>${job.department}</span>
+                                    <span>${job.location}</span>
+                                    <span>${job.job_type}</span>
+                                    ${job.salary_range ? `<span>${job.salary_range}</span>` : ''}
+                                </div>
+                                <div class="job-description">${job.description}</div>
+                                <button class="btn btn-outline">查看详情并申请</button>
+                            `;
+                            
+                            jobsGrid.appendChild(jobCard);
+                        });
+                    }
                 });
             } catch (error) {
                 console.error('Failed to load jobs:', error);
