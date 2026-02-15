@@ -418,7 +418,6 @@
             <a href="#about">关于我们</a>
             <a href="#jobs">招聘职位</a>
             <a href="#contact">联系我们</a>
-            <a href="admin.html">管理后台</a>
         </div>
     </div>
     
@@ -699,9 +698,8 @@
                 const jobsGrid = document.getElementById('jobsGrid');
                 jobsGrid.innerHTML = '';
                 
-                // 按category分组并按priority排序
+                // 按category分组并按priority排序（不显示管理层职位）
                 const categories = {
-                    '管理': [],
                     '技术人员': [],
                     '保洁人员': []
                 };
@@ -719,8 +717,8 @@
                     categories[cat].sort((a, b) => (a.priority || 99) - (b.priority || 99));
                 });
                 
-                // 按分类顺序显示
-                const categoryOrder = ['管理', '技术人员', '保洁人员'];
+                // 按分类顺序显示（不显示管理层职位）
+                const categoryOrder = ['技术人员', '保洁人员'];
                 categoryOrder.forEach(category => {
                     if (categories[category] && categories[category].length > 0) {
                         // 添加分类标题
@@ -739,12 +737,7 @@
                             
                             jobCard.innerHTML = `
                                 <h3>${job.title}${positionCount}</h3>
-                                <div class="job-meta">
-                                    <span>${job.department}</span>
-                                    <span>${job.location}</span>
-                                    <span>${job.job_type}</span>
-                                    ${job.salary_range ? `<span>${job.salary_range}</span>` : ''}
-                                </div>
+                                ${job.salary_range ? `<div class="job-meta"><span>${job.salary_range}</span></div>` : ''}
                                 <div class="job-description">${job.description}</div>
                                 <button class="btn btn-outline">查看详情并申请</button>
                             `;

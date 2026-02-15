@@ -32,10 +32,12 @@ db.init_app(app)
 from routes.auth import auth_bp
 from routes.jobs import jobs_bp
 from routes.applications import applications_bp
+from routes.users import users_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(jobs_bp, url_prefix='/api/jobs')
 app.register_blueprint(applications_bp, url_prefix='/api/applications')
+app.register_blueprint(users_bp, url_prefix='/api/users')
 
 # Serve frontend pages
 @app.route('/')
@@ -64,11 +66,11 @@ def init_db():
                 username='admin',
                 email='admin@example.com',
                 password=generate_password_hash('admin123'),
-                role='admin'
+                role='super_admin'
             )
             db.session.add(admin)
             db.session.commit()
-            print('[OK] Default admin user created: admin/admin123')
+            print('[OK] Default super admin user created: admin/admin123')
         else:
             print('[OK] Admin user already exists')
 

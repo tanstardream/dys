@@ -11,7 +11,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default='admin')  # admin, hr, viewer
+    role = db.Column(db.String(20), default='admin')  # super_admin, admin, hr, viewer
     created_at = db.Column(db.DateTime, default=datetime.now)
     
     def to_dict(self):
@@ -38,9 +38,6 @@ class Job(db.Model):
     requirements = db.Column(db.Text, nullable=False)
     responsibilities = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='active')  # active, closed, draft
-    category = db.Column(db.String(50), default='技术人员')  # 管理, 技术人员, 保洁人员
-    priority = db.Column(db.Integer, default=99)  # 优先级，数字越小越靠前
-    position_count = db.Column(db.Integer, default=1)  # 招聘人数
     category = db.Column(db.String(50), default='技术人员')  # 管理, 技术人员, 保洁人员
     priority = db.Column(db.Integer, default=99)  # 优先级，数字越小越靠前
     position_count = db.Column(db.Integer, default=1)  # 招聘人数

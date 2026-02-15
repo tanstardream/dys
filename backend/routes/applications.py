@@ -200,6 +200,29 @@ def download_resume(current_user, app_id):
         print(f"[DEBUG] 发送文件失败: {str(e)}")
         return jsonify({'error': f'Download failed: {str(e)}'}), 500
 
+@applications_bp.route('/<int:app_id>', methods=['DELETE'])
+@token_required
+def delete_application(current_user, app_id):
+    """删除简历申请"""
+    application = Application.query.get(app_id)
+    if not application:
+        return jsonify({'error': 'Application not found'}), 404
+    
+    # 如果有上传的文件，删除文件
+    if application.resume_file:
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], application.resume_file)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                print(f"[DEBUG] 删除文件: {file_path}")
+            except Exception as e:
+                print(f"[DEBUG] 删除文件失败: {str(e)}")
+    
+    db.session.delete(application)
+    db.session.commit()
+    
+    return jsonify({'message': 'Application deleted successfully'}), 200
+
 @applications_bp.route('/stats', methods=['GET'])
 @token_required
 def get_stats(current_user):

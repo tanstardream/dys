@@ -532,6 +532,7 @@
             <a href="#" class="active" onclick="showSection('overview')">概览</a>
             <a href="#" onclick="showSection('jobs')">职位管理</a>
             <a href="#" onclick="showSection('applications')">简历管理</a>
+            <a href="#" id="usersLink" onclick="showSection('users')" style="display:none;">用户管理</a>
         </div>
         
         <div class="main-content">
@@ -574,6 +575,15 @@
                     </div>
                     <div id="applicationsTable"></div>
                 </div>
+
+            <!-- 用户管理 -->
+            <div id="usersSection" class="section">
+                <div class="card">
+                    <h2>用户管理</h2>
+                    <button class="btn" onclick="showUserForm()">+ 添加新用户</button>
+                    <div id="usersTable"></div>
+                </div>
+            </div>
             </div>
         </div>
     </div>
@@ -676,6 +686,47 @@
         </div>
     </div>
     
+
+    <!-- 用户表单模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <h2 id="userFormTitle">添加新用户</h2>
+            <div id="userFormMessage"></div>
+            <form id="userForm">
+                <input type="hidden" id="userId" name="user_id">
+
+                <div class="form-group">
+                    <label>用户名 *</label>
+                    <input type="text" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label>邮箱 *</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>密码 *</label>
+                    <input type="password" name="password" id="userPassword">
+                    <small style="color: #666;">编辑时留空表示不修改密码</small>
+                </div>
+
+                <div class="form-group">
+                    <label>角色 *</label>
+                    <select name="role" required>
+                        <option value="admin">管理员</option>
+                        <option value="hr">HR</option>
+                        <option value="viewer">查看者</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">保存</button>
+                <button type="button" class="btn btn-danger" onclick="closeUserModal()">取消</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/api';  // 使用相对路径，自动适配服务器地址
         let token = localStorage.getItem('token');
@@ -1214,6 +1265,7 @@
                     <div style="margin-top: 1rem;">
                         <button class="btn" onclick="updateApplication(${app.id})">保存</button>
                         ${app.resume_file ? `<button class="btn btn-success" onclick="downloadResume(${app.id})">下载简历</button>` : ''}
+                        <button class="btn btn-warning" onclick="deleteApplication(${app.id})">删除简历</button>
                         <button class="btn btn-danger" onclick="closeApplicationModal()">关闭</button>
                     </div>
                 `;
@@ -1251,6 +1303,36 @@
             } catch (error) {
                 console.error('Failed to update application:', error);
                 alert('更新失败');
+            }
+        }
+        
+        // 删除简历
+        async function deleteApplication(appId) {
+            if (!confirm('确定要删除这份简历吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/applications/${appId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('简历已删除');
+                    closeApplicationModal();
+                    loadApplications();
+                    loadStats();
+                    loadRecentApplications();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || '删除失败');
+                }
+            } catch (error) {
+                console.error('Failed to delete application:', error);
+                alert('删除失败，请稍后重试');
             }
         }
         
@@ -1318,6 +1400,256 @@
             return statusMap[status] || status;
         }
         
+
+        // ============ 用户管理功能 ============
+        let currentUserId = null;
+
+        // 显示用户管理链接（仅超级管理员）
+        function showUsersLinkIfSuperAdmin() {
+            if (currentUser && currentUser.role === 'super_admin') {
+                document.getElementById('usersLink').style.display = 'block';
+            }
+        }
+
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/users/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Failed to load users:', data.error);
+                    return;
+                }
+
+                const container = document.getElementById('usersTable');
+
+                if (data.users.length === 0) {
+                    container.innerHTML = '<p>暂无用户</p>';
+                    return;
+                }
+
+                let html = '<table><thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
+
+                data.users.forEach(user => {
+                    const roleText = user.role === 'super_admin' ? '超级管理员' :
+                                   user.role === 'admin' ? '管理员' :
+                                   user.role === 'hr' ? 'HR' : '查看者';
+
+                    html += `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td><span class="badge badge-info">${roleText}</span></td>
+                            <td>${new Date(user.created_at).toLocaleString()}</td>
+                            <td>
+                                ${user.role !== 'super_admin' ? `
+                                    <button class="btn btn-small btn-info" onclick="editUser(${user.id})">编辑</button>
+                                    <button class="btn btn-small btn-warning" onclick="changeUserPassword(${user.id})">改密码</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})">删除</button>
+                                ` : '<span style="color: #666;">超级管理员</span>'}
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        // 显示用户表单
+        function showUserForm(user = null) {
+            currentUserId = user ? user.id : null;
+            const modal = document.getElementById('userModal');
+            const form = document.getElementById('userForm');
+            const passwordField = document.getElementById('userPassword');
+
+            if (user) {
+                document.getElementById('userFormTitle').textContent = '编辑用户';
+                document.getElementById('userId').value = user.id;
+                form.elements['username'].value = user.username;
+                form.elements['email'].value = user.email;
+                form.elements['role'].value = user.role;
+                passwordField.placeholder = '留空表示不修改密码';
+                passwordField.required = false;
+            } else {
+                document.getElementById('userFormTitle').textContent = '添加新用户';
+                form.reset();
+                passwordField.placeholder = '';
+                passwordField.required = true;
+            }
+
+            modal.style.display = 'block';
+        }
+
+        // 编辑用户
+        async function editUser(userId) {
+            try {
+                const response = await fetch(`${API_URL}/users/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                const user = data.users.find(u => u.id === userId);
+
+                if (user) {
+                    showUserForm(user);
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+            }
+        }
+
+        // 删除用户
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除这个用户吗？')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert('删除成功');
+                    loadUsers();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || '删除失败');
+                }
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                alert('删除失败');
+            }
+        }
+
+        // 修改用户密码
+        async function changeUserPassword(userId) {
+            const newPassword = prompt('请输入新密码:');
+            if (!newPassword) return;
+
+            try {
+                const response = await fetch(`${API_URL}/users/${userId}/password`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                });
+
+                if (response.ok) {
+                    alert('密码修改成功');
+                } else {
+                    const result = await response.json();
+                    alert(result.error || '密码修改失败');
+                }
+            } catch (error) {
+                console.error('Failed to change password:', error);
+                alert('密码修改失败');
+            }
+        }
+
+        // 关闭用户表单
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+            document.getElementById('userForm').reset();
+            document.getElementById('userFormMessage').innerHTML = '';
+        }
+
+        // 提交用户表单
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                role: formData.get('role')
+            };
+
+            // 只在创建新用户或密码字段有值时才发送密码
+            const password = formData.get('password');
+            if (password) {
+                data.password = password;
+            }
+
+            try {
+                let response;
+                if (currentUserId) {
+                    response = await fetch(`${API_URL}/users/${currentUserId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    response = await fetch(`${API_URL}/users/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(currentUserId ? '用户更新成功' : '用户创建成功');
+                    closeUserModal();
+                    loadUsers();
+                } else {
+                    showUserFormMessage('error', result.error || '操作失败');
+                }
+            } catch (error) {
+                console.error('Failed to save user:', error);
+                showUserFormMessage('error', '网络错误');
+            }
+        });
+
+        // 显示用户表单消息
+        function showUserFormMessage(type, message) {
+            const container = document.getElementById('userFormMessage');
+            const className = type === 'success' ? 'success-message' : 'error-message';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        // 更新showSection函数以处理用户管理
+        const originalShowSection = showSection;
+        showSection = function(section) {
+            originalShowSection(section);
+
+            if (section === 'users') {
+                document.getElementById('usersSection').classList.add('active');
+                document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+                document.getElementById('usersLink').classList.add('active');
+                loadUsers();
+            }
+        };
+
+        // 修改showDashboard函数以显示用户管理链接
+        const originalShowDashboard = showDashboard;
+        showDashboard = function() {
+            originalShowDashboard();
+            showUsersLinkIfSuperAdmin();
+        };
+
         // 初始化
         checkAuth();
     </script>
