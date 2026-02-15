@@ -1238,14 +1238,26 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `resume_${appId}.docx`;
+                    
+                    // 从响应头获取文件名，或使用默认名称
+                    const disposition = response.headers.get('Content-Disposition');
+                    let filename = `resume_${appId}.pdf`;
+                    if (disposition && disposition.includes('filename=')) {
+                        filename = disposition.split('filename=')[1].replace(/"/g, '');
+                    }
+                    
+                    a.download = filename;
+                    document.body.appendChild(a);
                     a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
                 } else {
-                    alert('下载失败');
+                    const result = await response.json();
+                    alert(result.error || '下载失败');
                 }
             } catch (error) {
                 console.error('Failed to download resume:', error);
-                alert('下载失败');
+                alert('下载失败，请稍后重试');
             }
         }
         

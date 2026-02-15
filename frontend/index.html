@@ -905,10 +905,11 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showMessage('success', '申请提交成功！我们会尽快与您联系。');
+                    showMessage('success', '✓ 申请提交成功！我们会尽快与您联系。窗口将在2秒后自动关闭...');
                     e.target.reset();
                     setTimeout(() => {
                         document.getElementById('jobModal').style.display = 'none';
+                        document.getElementById('messageContainer').innerHTML = '';
                     }, 2000);
                 } else {
                     showMessage('error', result.error || '提交失败，请重试');
@@ -997,7 +998,7 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showMessage('success', '申请提交成功！我们会尽快与您联系。');
+                    showMessage('success', '✓ 申请提交成功！我们会尽快与您联系。窗口将在2秒后自动关闭...');
                     e.target.reset();
                     document.getElementById('educationFields').innerHTML = '';
                     document.getElementById('experienceFields').innerHTML = '';
@@ -1005,6 +1006,7 @@
                     experienceCount = 0;
                     setTimeout(() => {
                         document.getElementById('jobModal').style.display = 'none';
+                        document.getElementById('messageContainer').innerHTML = '';
                     }, 2000);
                 } else {
                     showMessage('error', result.error || '提交失败，请重试');

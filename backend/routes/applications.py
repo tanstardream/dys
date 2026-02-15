@@ -168,7 +168,16 @@ def download_resume(current_user, app_id):
     if not os.path.exists(file_path):
         return jsonify({'error': 'Resume file not found'}), 404
     
-    return send_file(file_path, as_attachment=True)
+    # 生成下载文件名：申请人姓名_职位名称_简历.后缀
+    file_ext = os.path.splitext(application.resume_file)[1]
+    job_title = application.job.title if application.job else '职位'
+    download_name = f"{application.name}_{job_title}_简历{file_ext}"
+    
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=download_name
+    )
 
 @applications_bp.route('/stats', methods=['GET'])
 @token_required
