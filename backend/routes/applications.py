@@ -153,14 +153,32 @@ def update_application(current_user, app_id):
     return jsonify(application.to_dict(include_job=True)), 200
 
 @applications_bp.route('/<int:app_id>/download', methods=['GET'])
-@token_required
-def download_resume(current_user, app_id):
-    """下载简历文件"""
+def download_resume_public(app_id):
+    """下载简历文件 - 支持token参数或header认证"""
     import time
     start_time = time.time()
 
-    # 记录性能
-    print(f"[PERF] 开始处理下载请求 app_id={app_id}")
+    # 从header或URL参数获取token
+    token = request.headers.get('Authorization')
+    if token and token.startswith('Bearer '):
+        token = token[7:]
+    else:
+        # 从URL参数获取（用于直接下载）
+        token = request.args.get('token')
+
+    if not token:
+        return jsonify({'error': 'Authentication required'}), 401
+
+    # 验证token
+    from flask import current_app
+    import jwt
+    try:
+        data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        user_id = data['user_id']
+    except Exception as e:
+        return jsonify({'error': 'Invalid token'}), 401
+
+    print(f"[PERF] 开始处理下载请求 app_id={app_id}, user_id={user_id}")
 
     application = Application.query.get(app_id)
     print(f"[PERF] 数据库查询耗时: {time.time() - start_time:.3f}s")
@@ -195,7 +213,7 @@ def download_resume(current_user, app_id):
     print(f"[PERF] 下载文件名: {download_name}")
 
     try:
-        # 使用send_file with conditional=False加速
+        # 使用send_file直接流式传输
         print(f"[PERF] 准备发送文件，总准备耗时: {time.time() - start_time:.3f}s")
 
         return send_file(
@@ -204,7 +222,7 @@ def download_resume(current_user, app_id):
             download_name=download_name,
             mimetype='application/octet-stream',
             max_age=0,
-            conditional=False  # 禁用条件请求，加快响应
+            conditional=False
         )
     except Exception as e:
         print(f"[ERROR] Download failed for app_id {app_id}: {str(e)}")
