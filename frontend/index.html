@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德元升中医馆 - 招聘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #d65009 0%, #672e1a 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .nav {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav a {
+            color: #d65009;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: #672e1a;
+        }
+        
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .job-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .job-card h3 {
+            color: #d65009;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .job-meta {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .job-meta span {
+            background: #f0f0f0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .job-description {
+            color: #666;
+            margin: 1rem 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .btn {
+            background: #d65009;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #672e1a;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #d65009;
+            border: 2px solid #d65009;
+        }
+        
+        .btn-outline:hover {
+            background: #d65009;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 2rem;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #d65009;
+            border-bottom: 2px solid #d65009;
+            margin-bottom: -2px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .dynamic-fields {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        
+        .field-group {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .add-btn {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .nav {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .nav a {
+                margin: 0.3rem 0;
+                display: block;
+                text-align: center;
+            }
+            
+            .jobs-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .job-card {
+                padding: 1rem;
+            }
+            
+            .job-card h3 {
+                font-size: 1.2rem;
+            }
+            
+            .job-meta {
+                font-size: 0.85rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 1rem;
+                margin: 5% auto;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                padding: 0.8rem 1rem;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .tab.active {
+                border-bottom: 2px solid #d65009;
+            }
+            
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* 防止iOS自动缩放 */
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .btn-outline {
+                width: 100%;
+            }
+            
+            section {
+                padding: 1.5rem !important;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-bar select {
+                width: 100%;
+            }
+
+            /* 表单Grid布局在移动端改为单列 */
+            #onlineForm > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            .field-group > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        /* 小屏幕优化 */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .job-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                max-height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>德元升中医馆</h1>
+        <p>弘扬中医文化、让每个家庭都有一个懂中医的人</p>
+    </header>
+    
+    <div class="nav">
+        <div>
+            <a href="#about">关于我们</a>
+            <a href="#jobs">招聘职位</a>
+            <a href="#contact">联系我们</a>
+            <a href="admin.html">管理后台</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- 公司介绍 -->
+        <section id="about" style="background: white; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #d65009; margin-bottom: 1.5rem;">关于德元升中医馆</h2>
+            <div style="line-height: 1.8; color: #666; font-size: 1.1rem;">
+                <p style="margin-bottom: 1rem;">
+                    <strong style="color: #333;">隆回县德元升中医门诊有限公司</strong>是一家致力于传承和发扬中医药文化的专业医疗机构。我们秉承"弘扬中医文化、让每个家庭都有一个懂中医的人"的使命，为广大患者提供优质的中医诊疗服务。
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    我们拥有专业的中医团队，运用传统中医理论结合现代诊疗技术，为患者提供个性化的健康解决方案。德元升中医馆不仅是一个医疗机构，更是一个传播中医文化、普及养生知识的平台。
+                </p>
+                <p>
+                    我们诚挚邀请热爱中医事业、认同中医文化的优秀人才加入我们的团队，共同为弘扬中医药文化、守护人民健康贡献力量。
+                </p>
+            </div>
+        </section>
+        
+        <!-- 招聘职位 -->
+        <section id="jobs">
+            <h2 style="margin-bottom: 1rem;">招聘职位</h2>
+            <div id="jobsGrid" class="jobs-grid"></div>
+        </section>
+        
+        <!-- 联系方式 -->
+        <section id="contact" style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #d65009; margin-bottom: 1.5rem;">联系我们</h2>
+            <div style="line-height: 2; color: #666; font-size: 1.05rem;">
+                <p><strong>联系人：</strong>刘先生/女士</p>
+                <p><strong>联系电话：</strong>17775662859</p>
+                <p><strong>电子邮箱：</strong>646214256@qq.com</p>
+                <p><strong>工作地址：</strong>隆回县桃花坪街道大桥路50号（原隆回县药材公司大院内）</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 职位详情和申请模态框 -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="jobDetail"></div>
+            
+            <h2 style="margin-top: 2rem;">申请此职位</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('upload')">上传简历</button>
+                <button class="tab" onclick="switchTab('form')">在线填写</button>
+            </div>
+            
+            <div id="messageContainer"></div>
+            
+            <!-- 上传简历 -->
+            <div id="uploadTab" class="tab-content active">
+                <form id="uploadForm">
+                    <input type="hidden" id="uploadJobId" name="job_id">
+                    
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>邮箱 *</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>电话 *</label>
+                        <input type="tel" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>上传简历 (PDF, DOC, DOCX) *</label>
+                        <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">提交申请</button>
+                </form>
+            </div>
+            
+            <!-- 在线填写 -->
+            <div id="formTab" class="tab-content">
+                <form id="onlineForm">
+                    <input type="hidden" id="formJobId" name="job_id">
+                    
+                    <h3>基本信息</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label>姓名 *</label>
+                            <input type="text" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>性别 *</label>
+                            <select name="gender" required>
+                                <option value="">请选择</option>
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>出生年月 *</label>
+                            <input type="month" name="birth_date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>应聘部门 *</label>
+                            <input type="text" name="department" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>应聘岗位 *</label>
+                            <input type="text" name="position" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>期望待遇</label>
+                            <input type="text" name="expected_salary" placeholder="如：4000-6000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>身高(cm)</label>
+                            <input type="number" name="height">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>体重(kg)</label>
+                            <input type="number" name="weight">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>身份证号码 *</label>
+                            <input type="text" name="id_card" required pattern="\d{17}[\dXx]">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>联系电话 *</label>
+                            <input type="tel" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>政治面貌</label>
+                            <select name="political_status">
+                                <option value="">请选择</option>
+                                <option value="群众">群众</option>
+                                <option value="共青团员">共青团员</option>
+                                <option value="中共党员">中共党员</option>
+                                <option value="民主党派">民主党派</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>婚姻状况</label>
+                            <select name="marital_status">
+                                <option value="">请选择</option>
+                                <option value="未婚">未婚</option>
+                                <option value="已婚">已婚</option>
+                                <option value="离异">离异</option>
+                                <option value="丧偶">丧偶</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>子女状况</label>
+                            <select name="children_status">
+                                <option value="">请选择</option>
+                                <option value="未育">未育</option>
+                                <option value="一孩">一孩</option>
+                                <option value="二孩">二孩</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>技术职称</label>
+                            <input type="text" name="title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>可到岗日期</label>
+                            <input type="date" name="available_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <input type="email" name="email">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label>会使用软件</label>
+                            <input type="text" name="software_skills" placeholder="如：Word、Excel、PS等">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>会使用系统</label>
+                            <input type="text" name="system_skills" placeholder="如：ERP、CRM等">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label>家庭现住址</label>
+                            <input type="text" name="current_address">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>户籍所在地</label>
+                            <input type="text" name="household_address">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>紧急联系人</label>
+                            <input type="text" name="emergency_contact">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>紧急联系电话</label>
+                            <input type="tel" name="emergency_phone">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label>是否签订过竞业限制协议</label>
+                            <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+                                <label style="font-weight: normal;"><input type="radio" name="non_compete" value="是"> 是</label>
+                                <label style="font-weight: normal;"><input type="radio" name="non_compete" value="否" checked> 否</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>是否与原单位办理完毕解除或终止劳动关系手续</label>
+                            <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+                                <label style="font-weight: normal;"><input type="radio" name="labor_relation" value="是" checked> 是</label>
+                                <label style="font-weight: normal;"><input type="radio" name="labor_relation" value="否"> 否</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 2rem;">教育背景</h3>
+                    <div id="educationFields" class="dynamic-fields"></div>
+                    <button type="button" class="add-btn" onclick="addEducation()">+ 添加教育背景</button>
+                    
+                    <h3 style="margin-top: 2rem;">工作经历</h3>
+                    <div id="experienceFields" class="dynamic-fields"></div>
+                    <button type="button" class="add-btn" onclick="addExperience()">+ 添加工作经历</button>
+                    
+                    <div class="form-group" style="margin-top: 2rem;">
+                        <label>
+                            <input type="checkbox" name="generate_resume" value="true" checked>
+                            生成Word简历文档
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn">提交申请</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentJobId = null;
+        let educationCount = 0;
+        let experienceCount = 0;
+        let skillCount = 0;
+        
+        // 加载职位列表
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_URL}/jobs/?status=active`);
+                const data = await response.json();
+                
+                const jobsGrid = document.getElementById('jobsGrid');
+                jobsGrid.innerHTML = '';
+                
+                data.jobs.forEach(job => {
+                    const jobCard = document.createElement('div');
+                    jobCard.className = 'job-card';
+                    jobCard.onclick = () => showJobDetail(job.id);
+                    
+                    jobCard.innerHTML = `
+                        <h3>${job.title}</h3>
+                        <div class="job-meta">
+                            <span>${job.department}</span>
+                            <span>${job.location}</span>
+                            <span>${job.job_type}</span>
+                            ${job.salary_range ? `<span>${job.salary_range}</span>` : ''}
+                        </div>
+                        <div class="job-description">${job.description}</div>
+                        <button class="btn btn-outline">查看详情并申请</button>
+                    `;
+                    
+                    jobsGrid.appendChild(jobCard);
+                });
+            } catch (error) {
+                console.error('Failed to load jobs:', error);
+            }
+        }
+        
+        // 显示职位详情
+        async function showJobDetail(jobId) {
+            try {
+                const response = await fetch(`${API_URL}/jobs/${jobId}`);
+                const job = await response.json();
+                
+                currentJobId = jobId;
+                document.getElementById('uploadJobId').value = jobId;
+                document.getElementById('formJobId').value = jobId;
+                
+                const jobDetail = document.getElementById('jobDetail');
+                jobDetail.innerHTML = `
+                    <h2>${job.title}</h2>
+                    <div class="job-meta">
+                        <span>${job.department}</span>
+                        <span>${job.location}</span>
+                        <span>${job.job_type}</span>
+                        ${job.salary_range ? `<span>${job.salary_range}</span>` : ''}
+                    </div>
+                    <h3>职位描述</h3>
+                    <p>${job.description}</p>
+                    <h3>职位要求</h3>
+                    <p>${job.requirements}</p>
+                    <h3>工作职责</h3>
+                    <p>${job.responsibilities}</p>
+                `;
+                
+                document.getElementById('jobModal').style.display = 'block';
+                document.getElementById('messageContainer').innerHTML = '';
+            } catch (error) {
+                console.error('Failed to load job detail:', error);
+            }
+        }
+        
+        // 切换标签
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'upload') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('uploadTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('formTab').classList.add('active');
+            }
+        }
+        
+        // 添加教育背景
+        function addEducation() {
+            const id = educationCount++;
+            const container = document.getElementById('educationFields');
+            const div = document.createElement('div');
+            div.className = 'field-group';
+            div.id = `education-${id}`;
+            div.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>起止时间</label>
+                        <input type="text" name="education_period_${id}" placeholder="如：2018.09-2022.06">
+                    </div>
+                    <div class="form-group">
+                        <label>毕业院校</label>
+                        <input type="text" name="education_school_${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>所学专业</label>
+                        <input type="text" name="education_major_${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>学历</label>
+                        <select name="education_type_${id}">
+                            <option value="">请选择</option>
+                            <option value="全日制">全日制</option>
+                            <option value="在职">在职</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>毕(结/肆)业</label>
+                        <select name="education_status_${id}">
+                            <option value="">请选择</option>
+                            <option value="毕业">毕业</option>
+                            <option value="结业">结业</option>
+                            <option value="肆业">肆业</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeField('education-${id}')">删除</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        // 添加工作经历
+        function addExperience() {
+            const id = experienceCount++;
+            const container = document.getElementById('experienceFields');
+            const div = document.createElement('div');
+            div.className = 'field-group';
+            div.id = `experience-${id}`;
+            div.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>起止时间</label>
+                        <input type="text" name="experience_period_${id}" placeholder="如：2020.07-至今">
+                    </div>
+                    <div class="form-group">
+                        <label>工作单位</label>
+                        <input type="text" name="experience_company_${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>职务/工种</label>
+                        <input type="text" name="experience_position_${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>证明人</label>
+                        <input type="text" name="experience_reference_${id}">
+                    </div>
+                    <div class="form-group">
+                        <label>联系电话</label>
+                        <input type="tel" name="experience_phone_${id}">
+                    </div>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeField('experience-${id}')">删除</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        // 删除字段
+        function removeField(id) {
+            document.getElementById(id).remove();
+        }
+        
+        // 处理文件上传表单
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch(`${API_URL}/applications/`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('success', '申请提交成功！我们会尽快与您联系。');
+                    e.target.reset();
+                    setTimeout(() => {
+                        document.getElementById('jobModal').style.display = 'none';
+                    }, 2000);
+                } else {
+                    showMessage('error', result.error || '提交失败，请重试');
+                }
+            } catch (error) {
+                showMessage('error', '网络错误，请稍后重试');
+            }
+        });
+        
+        // 处理在线表单
+        document.getElementById('onlineForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            // 收集教育背景
+            const education = [];
+            for (let i = 0; i < educationCount; i++) {
+                const school = formData.get(`education_school_${i}`);
+                if (school) {
+                    education.push({
+                        period: formData.get(`education_period_${i}`),
+                        school: school,
+                        major: formData.get(`education_major_${i}`),
+                        type: formData.get(`education_type_${i}`),
+                        status: formData.get(`education_status_${i}`)
+                    });
+                }
+            }
+            
+            // 收集工作经历
+            const experience = [];
+            for (let i = 0; i < experienceCount; i++) {
+                const company = formData.get(`experience_company_${i}`);
+                if (company) {
+                    experience.push({
+                        period: formData.get(`experience_period_${i}`),
+                        company: company,
+                        position: formData.get(`experience_position_${i}`),
+                        reference: formData.get(`experience_reference_${i}`),
+                        phone: formData.get(`experience_phone_${i}`)
+                    });
+                }
+            }
+            
+            const data = {
+                job_id: formData.get('job_id'),
+                name: formData.get('name'),
+                gender: formData.get('gender'),
+                birth_date: formData.get('birth_date'),
+                department: formData.get('department'),
+                position: formData.get('position'),
+                expected_salary: formData.get('expected_salary'),
+                height: formData.get('height'),
+                weight: formData.get('weight'),
+                id_card: formData.get('id_card'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                political_status: formData.get('political_status'),
+                marital_status: formData.get('marital_status'),
+                children_status: formData.get('children_status'),
+                title: formData.get('title'),
+                available_date: formData.get('available_date'),
+                software_skills: formData.get('software_skills'),
+                system_skills: formData.get('system_skills'),
+                current_address: formData.get('current_address'),
+                household_address: formData.get('household_address'),
+                emergency_contact: formData.get('emergency_contact'),
+                emergency_phone: formData.get('emergency_phone'),
+                non_compete: formData.get('non_compete'),
+                labor_relation: formData.get('labor_relation'),
+                education: JSON.stringify(education),
+                work_experience: JSON.stringify(experience),
+                generate_resume: formData.get('generate_resume') === 'true'
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/applications/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('success', '申请提交成功！我们会尽快与您联系。');
+                    e.target.reset();
+                    document.getElementById('educationFields').innerHTML = '';
+                    document.getElementById('experienceFields').innerHTML = '';
+                    educationCount = 0;
+                    experienceCount = 0;
+                    setTimeout(() => {
+                        document.getElementById('jobModal').style.display = 'none';
+                    }, 2000);
+                } else {
+                    showMessage('error', result.error || '提交失败，请重试');
+                }
+            } catch (error) {
+                showMessage('error', '网络错误，请稍后重试');
+            }
+        });
+        
+        // 显示消息
+        function showMessage(type, message) {
+            const container = document.getElementById('messageContainer');
+            const className = type === 'success' ? 'success-message' : 'error-message';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+        
+        // 关闭模态框
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('jobModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('jobModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // 初始化
+        loadJobs();
+        
+        // 初始添加一个教育背景和工作经历
+        addEducation();
+        addExperience();
+    </script>
+</body>
+</html>

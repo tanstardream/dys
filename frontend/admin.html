@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德元升中医馆 - 招聘管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #d65009 0%, #672e1a 100%);
+        }
+        
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+        
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #d65009;
+        }
+        
+        .dashboard {
+            display: none;
+        }
+        
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #d65009;
+            font-size: 1.5rem;
+        }
+        
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 250px;
+            height: calc(100vh - 70px);
+            background: white;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+        
+        .sidebar a {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #d65009;
+            color: white;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d65009;
+        }
+        
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .card h2 {
+            margin-bottom: 1.5rem;
+            color: #d65009;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .btn {
+            background: #d65009;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+            margin-right: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #672e1a;
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .badge-pending {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .badge-reviewing {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .badge-interviewed {
+            background: #6610f2;
+            color: white;
+        }
+        
+        .badge-offered {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-rejected {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .badge-active {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-closed {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 响应式布局 - 平板和小屏幕 */
+        @media (max-width: 1024px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* 响应式布局 - 移动端 */
+        @media (max-width: 768px) {
+            .login-box {
+                width: 90%;
+                padding: 2rem;
+            }
+
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .header .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                display: flex;
+                overflow-x: auto;
+                padding: 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .sidebar a {
+                flex: 1;
+                min-width: 100px;
+                text-align: center;
+                padding: 1rem;
+                white-space: nowrap;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-card .number {
+                font-size: 1.5rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .card h2 {
+                font-size: 1.3rem;
+            }
+
+            /* 表格响应式 */
+            .card table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            /* 按钮调整 */
+            .btn-small {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .filter-bar select {
+                width: 100%;
+            }
+
+            /* 模态框调整 */
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+                margin: 5% auto;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* 防止iOS自动缩放 */
+            }
+        }
+
+        /* 响应式布局 - 小屏手机 */
+        @media (max-width: 480px) {
+            .login-box {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar a {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+
+            th, td {
+                padding: 0.6rem 0.3rem;
+                font-size: 0.85rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-small {
+                display: block;
+                width: 100%;
+                margin-bottom: 0.3rem;
+                margin-right: 0;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                max-height: 100vh;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h2>德元升中医馆</h2>
+            <h3 style="text-align: center; margin-bottom: 2rem; color: #666; font-size: 1rem;">招聘管理系统</h3>
+            <div id="loginMessage"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">登录</button>
+            </form>
+            <p style="margin-top: 1rem; text-align: center; color: #666; font-size: 0.9rem;">
+                默认账号: admin / admin123
+            </p>
+        </div>
+    </div>
+    
+    <!-- 管理后台 -->
+    <div id="dashboard" class="dashboard">
+        <div class="header">
+            <h1>德元升中医馆 - 招聘管理系统</h1>
+            <div class="user-info">
+                <span id="username"></span>
+                <button class="btn btn-small" onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <a href="#" class="active" onclick="showSection('overview')">概览</a>
+            <a href="#" onclick="showSection('jobs')">职位管理</a>
+            <a href="#" onclick="showSection('applications')">简历管理</a>
+        </div>
+        
+        <div class="main-content">
+            <!-- 概览 -->
+            <div id="overviewSection" class="section active">
+                <h2>数据概览</h2>
+                <div class="stats" id="statsContainer"></div>
+                
+                <div class="card">
+                    <h2>最新申请</h2>
+                    <div id="recentApplications"></div>
+                </div>
+            </div>
+            
+            <!-- 职位管理 -->
+            <div id="jobsSection" class="section">
+                <div class="card">
+                    <h2>职位管理</h2>
+                    <button class="btn" onclick="showJobForm()">+ 发布新职位</button>
+                    <div id="jobsTable"></div>
+                </div>
+            </div>
+            
+            <!-- 简历管理 -->
+            <div id="applicationsSection" class="section">
+                <div class="card">
+                    <h2>简历管理</h2>
+                    <div class="filter-bar">
+                        <select id="statusFilter" onchange="loadApplications()">
+                            <option value="">全部状态</option>
+                            <option value="pending">待处理</option>
+                            <option value="reviewing">审核中</option>
+                            <option value="interviewed">已面试</option>
+                            <option value="offered">已录用</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                        <select id="jobFilter" onchange="loadApplications()">
+                            <option value="">全部职位</option>
+                        </select>
+                    </div>
+                    <div id="applicationsTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 职位表单模态框 -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeJobModal()">&times;</span>
+            <h2 id="jobFormTitle">发布新职位</h2>
+            <div id="jobFormMessage"></div>
+            <form id="jobForm">
+                <input type="hidden" id="jobId" name="job_id">
+                
+                <div class="form-group">
+                    <label>职位名称 *</label>
+                    <input type="text" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>部门 *</label>
+                    <input type="text" name="department" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>工作地点 *</label>
+                    <input type="text" name="location" value="隆回县桃花坪街道大桥路50号" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>职位类型 *</label>
+                    <select name="job_type" required>
+                        <option value="full-time">全职</option>
+                        <option value="part-time">兼职</option>
+                        <option value="contract">合同</option>
+                        <option value="internship">实习</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>薪资范围</label>
+                    <input type="text" name="salary_range" placeholder="如: 10K-15K">
+                </div>
+                
+                <div class="form-group">
+                    <label>职位描述 *</label>
+                    <textarea name="description" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>职位要求 *</label>
+                    <textarea name="requirements" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>工作职责 *</label>
+                    <textarea name="responsibilities" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>状态</label>
+                    <select name="status">
+                        <option value="active">激活</option>
+                        <option value="closed">关闭</option>
+                        <option value="draft">草稿</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">保存</button>
+                <button type="button" class="btn btn-danger" onclick="closeJobModal()">取消</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 简历详情模态框 -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeApplicationModal()">&times;</span>
+            <h2>简历详情</h2>
+            <div id="applicationDetail"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+        let currentUser = null;
+        let currentJobId = null;
+        
+        // 检查登录状态
+        async function checkAuth() {
+            if (!token) {
+                showLogin();
+                return false;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/verify`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    showDashboard();
+                    return true;
+                } else {
+                    localStorage.removeItem('token');
+                    showLogin();
+                    return false;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                showLogin();
+                return false;
+            }
+        }
+        
+        // 登录
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    token = result.token;
+                    localStorage.setItem('token', token);
+                    currentUser = result.user;
+                    showDashboard();
+                } else {
+                    showLoginMessage('error', result.error || '登录失败');
+                }
+            } catch (error) {
+                showLoginMessage('error', '网络错误，请稍后重试');
+            }
+        });
+        
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            currentUser = null;
+            showLogin();
+        }
+        
+        // 显示登录页面
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+        
+        // 显示管理后台
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('username').textContent = currentUser.username;
+            
+            loadStats();
+            loadRecentApplications();
+            loadJobs();
+            loadApplications();
+            loadJobsForFilter();
+        }
+        
+        // 显示登录消息
+        function showLoginMessage(type, message) {
+            const container = document.getElementById('loginMessage');
+            const className = type === 'success' ? 'success-message' : 'error-message';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+        
+        // 切换section
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            
+            if (section === 'overview') {
+                document.getElementById('overviewSection').classList.add('active');
+                document.querySelectorAll('.sidebar a')[0].classList.add('active');
+                loadStats();
+                loadRecentApplications();
+            } else if (section === 'jobs') {
+                document.getElementById('jobsSection').classList.add('active');
+                document.querySelectorAll('.sidebar a')[1].classList.add('active');
+                loadJobs();
+            } else if (section === 'applications') {
+                document.getElementById('applicationsSection').classList.add('active');
+                document.querySelectorAll('.sidebar a')[2].classList.add('active');
+                loadApplications();
+            }
+        }
+        
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/applications/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const stats = await response.json();
+                
+                const container = document.getElementById('statsContainer');
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <h3>总申请数</h3>
+                        <div class="number">${stats.total}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>待处理</h3>
+                        <div class="number">${stats.pending}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>审核中</h3>
+                        <div class="number">${stats.reviewing}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已面试</h3>
+                        <div class="number">${stats.interviewed}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已录用</h3>
+                        <div class="number">${stats.offered}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已拒绝</h3>
+                        <div class="number">${stats.rejected}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        // 加载最新申请
+        async function loadRecentApplications() {
+            try {
+                const response = await fetch(`${API_URL}/applications/?per_page=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('recentApplications');
+                
+                if (data.applications.length === 0) {
+                    container.innerHTML = '<p>暂无申请</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>姓名</th><th>职位</th><th>状态</th><th>申请时间</th><th>操作</th></tr></thead><tbody>';
+                
+                data.applications.forEach(app => {
+                    html += `
+                        <tr>
+                            <td>${app.name}</td>
+                            <td>${app.job ? app.job.title : 'N/A'}</td>
+                            <td><span class="badge badge-${app.status}">${getStatusText(app.status)}</span></td>
+                            <td>${new Date(app.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-small btn-info" onclick="showApplicationDetail(${app.id})">查看</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load recent applications:', error);
+            }
+        }
+        
+        // 加载职位列表
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_URL}/jobs/?status=&per_page=100`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('jobsTable');
+                
+                if (data.jobs.length === 0) {
+                    container.innerHTML = '<p>暂无职位</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>职位名称</th><th>部门</th><th>地点</th><th>类型</th><th>状态</th><th>申请数</th><th>操作</th></tr></thead><tbody>';
+                
+                data.jobs.forEach(job => {
+                    html += `
+                        <tr>
+                            <td>${job.title}</td>
+                            <td>${job.department}</td>
+                            <td>${job.location}</td>
+                            <td>${job.job_type}</td>
+                            <td><span class="badge badge-${job.status}">${getJobStatusText(job.status)}</span></td>
+                            <td>${job.application_count}</td>
+                            <td>
+                                <button class="btn btn-small btn-info" onclick="editJob(${job.id})">编辑</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteJob(${job.id})">删除</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load jobs:', error);
+            }
+        }
+        
+        // 加载简历列表
+        async function loadApplications() {
+            const status = document.getElementById('statusFilter').value;
+            const jobId = document.getElementById('jobFilter').value;
+            
+            let url = `${API_URL}/applications/?per_page=100`;
+            if (status) url += `&status=${status}`;
+            if (jobId) url += `&job_id=${jobId}`;
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                const container = document.getElementById('applicationsTable');
+                
+                if (data.applications.length === 0) {
+                    container.innerHTML = '<p>暂无申请</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>姓名</th><th>联系方式</th><th>职位</th><th>状态</th><th>申请时间</th><th>操作</th></tr></thead><tbody>';
+                
+                data.applications.forEach(app => {
+                    html += `
+                        <tr>
+                            <td>${app.name}</td>
+                            <td>${app.email}<br>${app.phone}</td>
+                            <td>${app.job ? app.job.title : 'N/A'}</td>
+                            <td><span class="badge badge-${app.status}">${getStatusText(app.status)}</span></td>
+                            <td>${new Date(app.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-small btn-info" onclick="showApplicationDetail(${app.id})">查看</button>
+                                ${app.resume_file ? `<button class="btn btn-small btn-success" onclick="downloadResume(${app.id})">下载</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load applications:', error);
+            }
+        }
+        
+        // 加载职位到筛选器
+        async function loadJobsForFilter() {
+            try {
+                const response = await fetch(`${API_URL}/jobs/?status=&per_page=100`);
+                const data = await response.json();
+                
+                const select = document.getElementById('jobFilter');
+                data.jobs.forEach(job => {
+                    const option = document.createElement('option');
+                    option.value = job.id;
+                    option.textContent = job.title;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load jobs for filter:', error);
+            }
+        }
+        
+        // 显示职位表单
+        function showJobForm(job = null) {
+            currentJobId = job ? job.id : null;
+            const modal = document.getElementById('jobModal');
+            const form = document.getElementById('jobForm');
+            
+            if (job) {
+                document.getElementById('jobFormTitle').textContent = '编辑职位';
+                document.getElementById('jobId').value = job.id;
+                form.elements['title'].value = job.title;
+                form.elements['department'].value = job.department;
+                form.elements['location'].value = job.location;
+                form.elements['job_type'].value = job.job_type;
+                form.elements['salary_range'].value = job.salary_range || '';
+                form.elements['description'].value = job.description;
+                form.elements['requirements'].value = job.requirements;
+                form.elements['responsibilities'].value = job.responsibilities;
+                form.elements['status'].value = job.status;
+            } else {
+                document.getElementById('jobFormTitle').textContent = '发布新职位';
+                form.reset();
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        // 编辑职位
+        async function editJob(jobId) {
+            try {
+                const response = await fetch(`${API_URL}/jobs/${jobId}`);
+                const job = await response.json();
+                showJobForm(job);
+            } catch (error) {
+                console.error('Failed to load job:', error);
+            }
+        }
+        
+        // 删除职位
+        async function deleteJob(jobId) {
+            if (!confirm('确定要删除这个职位吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/jobs/${jobId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('删除成功');
+                    loadJobs();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (error) {
+                console.error('Failed to delete job:', error);
+                alert('删除失败');
+            }
+        }
+        
+        // 关闭职位表单
+        function closeJobModal() {
+            document.getElementById('jobModal').style.display = 'none';
+            document.getElementById('jobForm').reset();
+            document.getElementById('jobFormMessage').innerHTML = '';
+        }
+        
+        // 提交职位表单
+        document.getElementById('jobForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                title: formData.get('title'),
+                department: formData.get('department'),
+                location: formData.get('location'),
+                job_type: formData.get('job_type'),
+                salary_range: formData.get('salary_range'),
+                description: formData.get('description'),
+                requirements: formData.get('requirements'),
+                responsibilities: formData.get('responsibilities'),
+                status: formData.get('status')
+            };
+            
+            try {
+                let response;
+                if (currentJobId) {
+                    response = await fetch(`${API_URL}/jobs/${currentJobId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    response = await fetch(`${API_URL}/jobs/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                }
+                
+                if (response.ok) {
+                    alert('保存成功');
+                    closeJobModal();
+                    loadJobs();
+                } else {
+                    const result = await response.json();
+                    showJobFormMessage('error', result.error || '保存失败');
+                }
+            } catch (error) {
+                console.error('Failed to save job:', error);
+                showJobFormMessage('error', '网络错误');
+            }
+        });
+        
+        // 显示职位表单消息
+        function showJobFormMessage(type, message) {
+            const container = document.getElementById('jobFormMessage');
+            const className = type === 'success' ? 'success-message' : 'error-message';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+        
+        // 显示简历详情
+        async function showApplicationDetail(appId) {
+            try {
+                const response = await fetch(`${API_URL}/applications/${appId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const app = await response.json();
+                
+                let educationHtml = '';
+                if (app.education) {
+                    try {
+                        const education = JSON.parse(app.education);
+                        educationHtml = '<h3>教育经历</h3><ul>';
+                        education.forEach(edu => {
+                            educationHtml += `<li>${edu.school} - ${edu.major} (${edu.degree}) ${edu.start_date} - ${edu.end_date}</li>`;
+                        });
+                        educationHtml += '</ul>';
+                    } catch (e) {}
+                }
+                
+                let experienceHtml = '';
+                if (app.work_experience) {
+                    try {
+                        const experience = JSON.parse(app.work_experience);
+                        experienceHtml = '<h3>工作经历</h3><ul>';
+                        experience.forEach(exp => {
+                            experienceHtml += `<li><strong>${exp.company} - ${exp.position}</strong><br>${exp.start_date} - ${exp.end_date}<br>${exp.description}</li>`;
+                        });
+                        experienceHtml += '</ul>';
+                    } catch (e) {}
+                }
+                
+                let skillsHtml = '';
+                if (app.skills) {
+                    try {
+                        const skills = JSON.parse(app.skills);
+                        skillsHtml = '<h3>专业技能</h3><ul>';
+                        skills.forEach(skill => {
+                            skillsHtml += `<li>${skill.name} - ${skill.level}</li>`;
+                        });
+                        skillsHtml += '</ul>';
+                    } catch (e) {}
+                }
+                
+                const detail = document.getElementById('applicationDetail');
+                detail.innerHTML = `
+                    <div><strong>姓名:</strong> ${app.name}</div>
+                    <div><strong>邮箱:</strong> ${app.email}</div>
+                    <div><strong>电话:</strong> ${app.phone}</div>
+                    <div><strong>申请职位:</strong> ${app.job ? app.job.title : 'N/A'}</div>
+                    <div><strong>申请时间:</strong> ${new Date(app.created_at).toLocaleString()}</div>
+                    <div><strong>简历类型:</strong> ${app.resume_type === 'uploaded' ? '上传' : app.resume_type === 'generated' ? '自动生成' : '在线填写'}</div>
+                    <div><strong>当前状态:</strong> <span class="badge badge-${app.status}">${getStatusText(app.status)}</span></div>
+                    
+                    ${educationHtml}
+                    ${experienceHtml}
+                    ${skillsHtml}
+                    
+                    ${app.self_introduction ? `<h3>自我介绍</h3><p>${app.self_introduction}</p>` : ''}
+                    
+                    <h3>HR备注</h3>
+                    <textarea id="appNotes" style="width: 100%; min-height: 100px;">${app.notes || ''}</textarea>
+                    
+                    <h3>更新状态</h3>
+                    <select id="appStatus" style="width: 100%; padding: 0.5rem;">
+                        <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>待处理</option>
+                        <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>审核中</option>
+                        <option value="interviewed" ${app.status === 'interviewed' ? 'selected' : ''}>已面试</option>
+                        <option value="offered" ${app.status === 'offered' ? 'selected' : ''}>已录用</option>
+                        <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>已拒绝</option>
+                    </select>
+                    
+                    <div style="margin-top: 1rem;">
+                        <button class="btn" onclick="updateApplication(${app.id})">保存</button>
+                        ${app.resume_file ? `<button class="btn btn-success" onclick="downloadResume(${app.id})">下载简历</button>` : ''}
+                        <button class="btn btn-danger" onclick="closeApplicationModal()">关闭</button>
+                    </div>
+                `;
+                
+                document.getElementById('applicationModal').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load application detail:', error);
+            }
+        }
+        
+        // 更新简历状态
+        async function updateApplication(appId) {
+            const status = document.getElementById('appStatus').value;
+            const notes = document.getElementById('appNotes').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/applications/${appId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status, notes })
+                });
+                
+                if (response.ok) {
+                    alert('更新成功');
+                    closeApplicationModal();
+                    loadApplications();
+                    loadStats();
+                    loadRecentApplications();
+                } else {
+                    alert('更新失败');
+                }
+            } catch (error) {
+                console.error('Failed to update application:', error);
+                alert('更新失败');
+            }
+        }
+        
+        // 下载简历
+        async function downloadResume(appId) {
+            try {
+                const response = await fetch(`${API_URL}/applications/${appId}/download`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `resume_${appId}.docx`;
+                    a.click();
+                } else {
+                    alert('下载失败');
+                }
+            } catch (error) {
+                console.error('Failed to download resume:', error);
+                alert('下载失败');
+            }
+        }
+        
+        // 关闭简历详情模态框
+        function closeApplicationModal() {
+            document.getElementById('applicationModal').style.display = 'none';
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'reviewing': '审核中',
+                'interviewed': '已面试',
+                'offered': '已录用',
+                'rejected': '已拒绝'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 获取职位状态文本
+        function getJobStatusText(status) {
+            const statusMap = {
+                'active': '激活',
+                'closed': '关闭',
+                'draft': '草稿'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 初始化
+        checkAuth();
+    </script>
+</body>
+</html>
