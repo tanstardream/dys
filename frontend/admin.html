@@ -524,6 +524,7 @@
             <h1>德元升中医馆 - 招聘管理系统</h1>
             <div class="user-info">
                 <span id="username"></span>
+                <button class="btn btn-small" onclick="showPasswordModal()">修改密码</button>
                 <button class="btn btn-small" onclick="logout()">退出</button>
             </div>
         </div>
@@ -532,7 +533,6 @@
             <a href="#" class="active" onclick="showSection('overview')">概览</a>
             <a href="#" onclick="showSection('jobs')">职位管理</a>
             <a href="#" onclick="showSection('applications')">简历管理</a>
-            <a href="#" id="usersLink" onclick="showSection('users')" style="display:none;">用户管理</a>
         </div>
         
         <div class="main-content">
@@ -574,14 +574,6 @@
                         </select>
                     </div>
                     <div id="applicationsTable"></div>
-                </div>
-
-            <!-- 用户管理 -->
-            <div id="usersSection" class="section">
-                <div class="card">
-                    <h2>用户管理</h2>
-                    <button class="btn" onclick="showUserForm()">+ 添加新用户</button>
-                    <div id="usersTable"></div>
                 </div>
             </div>
             </div>
@@ -688,41 +680,27 @@
     
 
     <!-- 用户表单模态框 -->
-    <div id="userModal" class="modal">
+
+    <!-- 修改密码模态框 -->
+    <div id="passwordModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeUserModal()">&times;</span>
-            <h2 id="userFormTitle">添加新用户</h2>
-            <div id="userFormMessage"></div>
-            <form id="userForm">
-                <input type="hidden" id="userId" name="user_id">
-
+            <span class="close" onclick="closePasswordModal()">&times;</span>
+            <h2>修改密码</h2>
+            <div id="passwordFormMessage"></div>
+            <form id="passwordForm">
                 <div class="form-group">
-                    <label>用户名 *</label>
-                    <input type="text" name="username" required>
+                    <label>新密码 *</label>
+                    <input type="password" name="password" required minlength="6">
+                    <small style="color: #666;">密码长度至少6个字符</small>
                 </div>
 
                 <div class="form-group">
-                    <label>邮箱 *</label>
-                    <input type="email" name="email" required>
+                    <label>确认密码 *</label>
+                    <input type="password" name="confirm_password" required minlength="6">
                 </div>
 
-                <div class="form-group">
-                    <label>密码 *</label>
-                    <input type="password" name="password" id="userPassword">
-                    <small style="color: #666;">编辑时留空表示不修改密码</small>
-                </div>
-
-                <div class="form-group">
-                    <label>角色 *</label>
-                    <select name="role" required>
-                        <option value="admin">管理员</option>
-                        <option value="hr">HR</option>
-                        <option value="viewer">查看者</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn">保存</button>
-                <button type="button" class="btn btn-danger" onclick="closeUserModal()">取消</button>
+                <button type="submit" class="btn">确认修改</button>
+                <button type="button" class="btn btn-danger" onclick="closePasswordModal()">取消</button>
             </form>
         </div>
     </div>
@@ -817,13 +795,12 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('username').textContent = currentUser.username;
-            
+
             loadStats();
             loadRecentApplications();
             loadJobs();
             loadApplications();
             loadJobsForFilter();
-            showUsersLinkIfSuperAdmin();
         }
         
         // 显示登录消息
@@ -837,7 +814,7 @@
         function showSection(section) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-            
+
             if (section === 'overview') {
                 document.getElementById('overviewSection').classList.add('active');
                 document.querySelectorAll('.sidebar a')[0].classList.add('active');
@@ -851,10 +828,6 @@
                 document.getElementById('applicationsSection').classList.add('active');
                 document.querySelectorAll('.sidebar a')[2].classList.add('active');
                 loadApplications();
-            } else if (section === 'users') {
-                document.getElementById('usersSection').classList.add('active');
-                document.getElementById('usersLink').classList.add('active');
-                loadUsers();
             }
         }
         
@@ -1404,239 +1377,66 @@
             };
             return statusMap[status] || status;
         }
-        
 
-        // ============ 用户管理功能 ============
-        let currentUserId = null;
 
-        // 显示用户管理链接（仅超级管理员）
-        function showUsersLinkIfSuperAdmin() {
-            if (currentUser && currentUser.role === 'super_admin') {
-                document.getElementById('usersLink').style.display = 'block';
-            }
+        // ============ 修改密码功能 ============
+
+        // 显示修改密码模态框
+        function showPasswordModal() {
+            document.getElementById('passwordModal').style.display = 'block';
         }
 
-        // 加载用户列表
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    console.error('Failed to load users:', data.error);
-                    return;
-                }
-
-                const container = document.getElementById('usersTable');
-
-                if (data.users.length === 0) {
-                    container.innerHTML = '<p>暂无用户</p>';
-                    return;
-                }
-
-                let html = '<table><thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
-
-                data.users.forEach(user => {
-                    const roleText = user.role === 'super_admin' ? '超级管理员' :
-                                   user.role === 'admin' ? '管理员' :
-                                   user.role === 'hr' ? 'HR' : '查看者';
-
-                    html += `
-                        <tr>
-                            <td>${user.username}</td>
-                            <td>${user.email}</td>
-                            <td><span class="badge badge-info">${roleText}</span></td>
-                            <td>${new Date(user.created_at).toLocaleString()}</td>
-                            <td>
-                                ${user.role !== 'super_admin' ? `
-                                    <button class="btn btn-small btn-info" onclick="editUser(${user.id})">编辑</button>
-                                    <button class="btn btn-small btn-warning" onclick="changeUserPassword(${user.id})">改密码</button>
-                                    <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})">删除</button>
-                                ` : '<span style="color: #666;">超级管理员</span>'}
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                html += '</tbody></table>';
-                container.innerHTML = html;
-            } catch (error) {
-                console.error('Failed to load users:', error);
-            }
+        // 关闭修改密码模态框
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('passwordForm').reset();
+            document.getElementById('passwordFormMessage').innerHTML = '';
         }
 
-        // 显示用户表单
-        function showUserForm(user = null) {
-            currentUserId = user ? user.id : null;
-            const modal = document.getElementById('userModal');
-            const form = document.getElementById('userForm');
-            const passwordField = document.getElementById('userPassword');
+        // 提交密码修改表单
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-            if (user) {
-                document.getElementById('userFormTitle').textContent = '编辑用户';
-                document.getElementById('userId').value = user.id;
-                form.elements['username'].value = user.username;
-                form.elements['email'].value = user.email;
-                form.elements['role'].value = user.role;
-                passwordField.placeholder = '留空表示不修改密码';
-                passwordField.required = false;
-            } else {
-                document.getElementById('userFormTitle').textContent = '添加新用户';
-                form.reset();
-                passwordField.placeholder = '';
-                passwordField.required = true;
+            const formData = new FormData(e.target);
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirm_password');
+
+            // 验证两次密码是否一致
+            if (password !== confirmPassword) {
+                showPasswordFormMessage('error', '两次输入的密码不一致');
+                return;
             }
-
-            modal.style.display = 'block';
-        }
-
-        // 编辑用户
-        async function editUser(userId) {
-            try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-                const user = data.users.find(u => u.id === userId);
-
-                if (user) {
-                    showUserForm(user);
-                }
-            } catch (error) {
-                console.error('Failed to load user:', error);
-            }
-        }
-
-        // 删除用户
-        async function deleteUser(userId) {
-            if (!confirm('确定要删除这个用户吗？')) return;
 
             try {
-                const response = await fetch(`${API_URL}/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    alert('删除成功');
-                    loadUsers();
-                } else {
-                    const result = await response.json();
-                    alert(result.error || '删除失败');
-                }
-            } catch (error) {
-                console.error('Failed to delete user:', error);
-                alert('删除失败');
-            }
-        }
-
-        // 修改用户密码
-        async function changeUserPassword(userId) {
-            const newPassword = prompt('请输入新密码:');
-            if (!newPassword) return;
-
-            try {
-                const response = await fetch(`${API_URL}/users/${userId}/password`, {
+                const response = await fetch(`${API_URL}/users/password`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ password: newPassword })
+                    body: JSON.stringify({ password: password })
                 });
-
-                if (response.ok) {
-                    alert('密码修改成功');
-                } else {
-                    const result = await response.json();
-                    alert(result.error || '密码修改失败');
-                }
-            } catch (error) {
-                console.error('Failed to change password:', error);
-                alert('密码修改失败');
-            }
-        }
-
-        // 关闭用户表单
-        function closeUserModal() {
-            document.getElementById('userModal').style.display = 'none';
-            document.getElementById('userForm').reset();
-            document.getElementById('userFormMessage').innerHTML = '';
-        }
-
-        // 提交用户表单
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData(e.target);
-            const data = {
-                username: formData.get('username'),
-                email: formData.get('email'),
-                role: formData.get('role')
-            };
-
-            // 只在创建新用户或密码字段有值时才发送密码
-            const password = formData.get('password');
-            if (password) {
-                data.password = password;
-            }
-
-            try {
-                let response;
-                if (currentUserId) {
-                    response = await fetch(`${API_URL}/users/${currentUserId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    response = await fetch(`${API_URL}/users/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(data)
-                    });
-                }
 
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(currentUserId ? '用户更新成功' : '用户创建成功');
-                    closeUserModal();
-                    loadUsers();
+                    alert('密码修改成功，请重新登录');
+                    logout();
                 } else {
-                    showUserFormMessage('error', result.error || '操作失败');
+                    showPasswordFormMessage('error', result.error || '密码修改失败');
                 }
             } catch (error) {
-                console.error('Failed to save user:', error);
-                showUserFormMessage('error', '网络错误');
+                console.error('Failed to change password:', error);
+                showPasswordFormMessage('error', '网络错误');
             }
         });
 
-        // 显示用户表单消息
-        function showUserFormMessage(type, message) {
-            const container = document.getElementById('userFormMessage');
+        // 显示密码表单消息
+        function showPasswordFormMessage(type, message) {
+            const container = document.getElementById('passwordFormMessage');
             const className = type === 'success' ? 'success-message' : 'error-message';
             container.innerHTML = `<div class="${className}">${message}</div>`;
         }
-
-
-
 
 
         // 初始化
