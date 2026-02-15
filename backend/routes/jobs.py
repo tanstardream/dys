@@ -56,6 +56,9 @@ def create_job(current_user):
         description=data['description'],
         requirements=data['requirements'],
         responsibilities=data['responsibilities'],
+        category=data.get('category', '技术人员'),
+        position_count=data.get('position_count', 1),
+        priority=data.get('priority', 99),
         status=data.get('status', 'active'),
         created_by=current_user.id
     )
@@ -77,7 +80,8 @@ def update_job(current_user, job_id):
     
     # Update fields
     updatable_fields = ['title', 'department', 'location', 'job_type', 'salary_range', 
-                       'description', 'requirements', 'responsibilities', 'status']
+                       'description', 'requirements', 'responsibilities', 
+                       'category', 'position_count', 'priority', 'status']
     for field in updatable_fields:
         if field in data:
             setattr(job, field, data[field])

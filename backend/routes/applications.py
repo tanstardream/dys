@@ -156,28 +156,49 @@ def update_application(current_user, app_id):
 @token_required
 def download_resume(current_user, app_id):
     """下载简历文件"""
+    print(f"[DEBUG] 开始下载简历，app_id: {app_id}")
+    
     application = Application.query.get(app_id)
     if not application:
+        print(f"[DEBUG] 申请记录不存在: {app_id}")
         return jsonify({'error': 'Application not found'}), 404
     
+    print(f"[DEBUG] 找到申请记录: {application.name}, resume_file: {application.resume_file}")
+    
     if not application.resume_file:
+        print(f"[DEBUG] 没有简历文件")
         return jsonify({'error': 'No resume file available'}), 404
     
     file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], application.resume_file)
+    print(f"[DEBUG] 文件路径: {file_path}")
+    print(f"[DEBUG] UPLOAD_FOLDER: {current_app.config['UPLOAD_FOLDER']}")
+    print(f"[DEBUG] 文件存在: {os.path.exists(file_path)}")
     
     if not os.path.exists(file_path):
-        return jsonify({'error': 'Resume file not found'}), 404
+        print(f"[DEBUG] 文件不存在: {file_path}")
+        # 检查目录是否存在
+        upload_dir = os.path.dirname(file_path)
+        print(f"[DEBUG] 上传目录: {upload_dir}, 存在: {os.path.exists(upload_dir)}")
+        if os.path.exists(upload_dir):
+            print(f"[DEBUG] 目录中的文件: {os.listdir(upload_dir)}")
+        return jsonify({'error': 'Resume file not found', 'path': file_path}), 404
     
     # 生成下载文件名：申请人姓名_职位名称_简历.后缀
     file_ext = os.path.splitext(application.resume_file)[1]
     job_title = application.job.title if application.job else '职位'
     download_name = f"{application.name}_{job_title}_简历{file_ext}"
     
-    return send_file(
-        file_path,
-        as_attachment=True,
-        download_name=download_name
-    )
+    print(f"[DEBUG] 准备发送文件: {download_name}")
+    
+    try:
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=download_name
+        )
+    except Exception as e:
+        print(f"[DEBUG] 发送文件失败: {str(e)}")
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
 
 @applications_bp.route('/stats', methods=['GET'])
 @token_required

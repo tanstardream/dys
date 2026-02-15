@@ -633,6 +633,26 @@
                 </div>
                 
                 <div class="form-group">
+                    <label>职位分类 *</label>
+                    <select name="category" required>
+                        <option value="管理">管理</option>
+                        <option value="技术人员">技术人员</option>
+                        <option value="保洁人员">保洁人员</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>招聘人数 *</label>
+                    <input type="number" name="position_count" min="1" value="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>显示优先级 *</label>
+                    <input type="number" name="priority" min="1" max="99" value="99" required>
+                    <small style="color: #666;">数字越小越靠前显示</small>
+                </div>
+                
+                <div class="form-group">
                     <label>状态</label>
                     <select name="status">
                         <option value="active">激活</option>
@@ -995,10 +1015,17 @@
                 form.elements['description'].value = job.description;
                 form.elements['requirements'].value = job.requirements;
                 form.elements['responsibilities'].value = job.responsibilities;
+                form.elements['category'].value = job.category || '技术人员';
+                form.elements['position_count'].value = job.position_count || 1;
+                form.elements['priority'].value = job.priority || 99;
                 form.elements['status'].value = job.status;
             } else {
                 document.getElementById('jobFormTitle').textContent = '发布新职位';
                 form.reset();
+                // 设置新建时的默认值
+                form.elements['category'].value = '技术人员';
+                form.elements['position_count'].value = 1;
+                form.elements['priority'].value = 99;
             }
             
             modal.style.display = 'block';
@@ -1060,6 +1087,9 @@
                 description: formData.get('description'),
                 requirements: formData.get('requirements'),
                 responsibilities: formData.get('responsibilities'),
+                category: formData.get('category'),
+                position_count: parseInt(formData.get('position_count')) || 1,
+                priority: parseInt(formData.get('priority')) || 99,
                 status: formData.get('status')
             };
             
