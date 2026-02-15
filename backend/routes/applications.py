@@ -156,7 +156,15 @@ def update_application(current_user, app_id):
 @token_required
 def download_resume(current_user, app_id):
     """下载简历文件"""
+    import time
+    start_time = time.time()
+
+    # 记录性能
+    print(f"[PERF] 开始处理下载请求 app_id={app_id}")
+
     application = Application.query.get(app_id)
+    print(f"[PERF] 数据库查询耗时: {time.time() - start_time:.3f}s")
+
     if not application:
         return jsonify({'error': 'Application not found'}), 404
 
@@ -164,29 +172,39 @@ def download_resume(current_user, app_id):
         return jsonify({'error': 'No resume file available'}), 404
 
     file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], application.resume_file)
+    print(f"[PERF] 路径拼接耗时: {time.time() - start_time:.3f}s")
+    print(f"[PERF] 文件路径: {file_path}")
 
     if not os.path.exists(file_path):
+        print(f"[ERROR] 文件不存在: {file_path}")
         return jsonify({'error': 'Resume file not found on server'}), 404
 
-    # 生成安全的文件名（使用拼音或纯ASCII，避免中文编码问题）
+    # 获取文件大小
+    file_size = os.path.getsize(file_path)
+    print(f"[PERF] 文件大小: {file_size / 1024:.2f} KB")
+
+    # 生成安全的文件名
     file_ext = os.path.splitext(application.resume_file)[1]
     job_title = application.job.title if application.job else 'Job'
-
-    # 使用更安全的文件名格式：姓名_职位_时间戳
     timestamp = datetime.now().strftime('%Y%m%d')
-    # 移除文件名中的特殊字符，保留基本信息
     safe_name = application.name.replace(' ', '_')
     safe_job = job_title.replace(' ', '_')
     download_name = f"{safe_name}_{safe_job}_{timestamp}{file_ext}"
 
+    print(f"[PERF] 文件名生成耗时: {time.time() - start_time:.3f}s")
+    print(f"[PERF] 下载文件名: {download_name}")
+
     try:
-        # 使用send_file，支持大文件和断点续传
+        # 使用send_file with conditional=False加速
+        print(f"[PERF] 准备发送文件，总准备耗时: {time.time() - start_time:.3f}s")
+
         return send_file(
             file_path,
             as_attachment=True,
             download_name=download_name,
-            mimetype='application/octet-stream',  # 确保浏览器下载而不是预览
-            max_age=0  # 禁用缓存
+            mimetype='application/octet-stream',
+            max_age=0,
+            conditional=False  # 禁用条件请求，加快响应
         )
     except Exception as e:
         print(f"[ERROR] Download failed for app_id {app_id}: {str(e)}")
