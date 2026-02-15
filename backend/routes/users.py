@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 from models.models import db, User
 from routes.auth import token_required
 
-users_bp = Blueprint('users', __name__')
+users_bp = Blueprint('users', __name__)
 
 @users_bp.route('/', methods=['GET'])
 @token_required
