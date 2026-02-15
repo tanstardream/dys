@@ -45,11 +45,6 @@ def index():
     """外部求职页面"""
     return send_from_directory('../frontend', 'index.html')
 
-@app.route('/admin')
-def admin():
-    """管理后台页面"""
-    return send_from_directory('../frontend', 'admin.html')
-
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return {'status': 'healthy', 'timestamp': datetime.now().isoformat()}
@@ -79,18 +74,17 @@ def main():
     """Main entry point for running the application"""
     init_db()
     print('\n' + '='*60)
-    print('Recruitment System - Backend Server Starting...')
+    print('Recruitment System - Public Server Starting...')
     print('='*60)
     print('\nAccess URLs:')
     print('- Public Page:    http://localhost:5000/')
-    print('- Admin Panel:    http://localhost:5000/admin')
     print('- API Health:     http://localhost:5000/api/health')
     print('\nFor Cloud Server:')
     print('- Replace "localhost" with your server IP')
     print('- Example: http://your-server-ip:5000/')
-    print('\nDefault Credentials:')
-    print('Username: admin')
-    print('Password: admin123')
+    print('\nNote:')
+    print('- Admin panel runs on port 5001')
+    print('- Start admin panel: python admin_app.py')
     print('='*60 + '\n')
 
     # For cloud deployment, use 0.0.0.0 to listen on all interfaces
