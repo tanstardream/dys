@@ -823,6 +823,7 @@
             loadJobs();
             loadApplications();
             loadJobsForFilter();
+            showUsersLinkIfSuperAdmin();
         }
         
         // 显示登录消息
@@ -850,6 +851,10 @@
                 document.getElementById('applicationsSection').classList.add('active');
                 document.querySelectorAll('.sidebar a')[2].classList.add('active');
                 loadApplications();
+            } else if (section === 'users') {
+                document.getElementById('usersSection').classList.add('active');
+                document.getElementById('usersLink').classList.add('active');
+                loadUsers();
             }
         }
         
@@ -1630,25 +1635,9 @@
             container.innerHTML = `<div class="${className}">${message}</div>`;
         }
 
-        // 更新showSection函数以处理用户管理
-        const originalShowSection = showSection;
-        showSection = function(section) {
-            originalShowSection(section);
 
-            if (section === 'users') {
-                document.getElementById('usersSection').classList.add('active');
-                document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
-                document.getElementById('usersLink').classList.add('active');
-                loadUsers();
-            }
-        };
 
-        // 修改showDashboard函数以显示用户管理链接
-        const originalShowDashboard = showDashboard;
-        showDashboard = function() {
-            originalShowDashboard();
-            showUsersLinkIfSuperAdmin();
-        };
+
 
         // 初始化
         checkAuth();
