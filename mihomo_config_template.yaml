@@ -1,0 +1,160 @@
+# Mihomo (Clash Meta) 配置文件模板
+# 路径: /etc/mihomo/config.yaml
+
+# 混合端口 HTTP(S) 和 SOCKS5 用一个端口
+mixed-port: 7890
+
+# HTTP 代理端口
+# port: 7890
+
+# SOCKS5 代理端口
+# socks-port: 7891
+
+# Linux 和 macOS 的 redir 代理端口
+# redir-port: 7892
+
+# 允许局域网连接
+allow-lan: true
+
+# 绑定地址
+bind-address: "*"
+
+# 规则模式：rule（规则） / global（全局代理）/ direct（全局直连）
+mode: rule
+
+# 日志级别：silent / error / warning / info / debug
+log-level: info
+
+# 外部控制器
+external-controller: 0.0.0.0:9090
+
+# RESTful API Secret
+secret: ""
+
+# IPv6支持
+ipv6: false
+
+# 代理节点
+proxies:
+  # 示例节点 - 请替换为你的实际节点信息
+  - name: "示例节点1"
+    type: ss
+    server: server1.example.com
+    port: 443
+    cipher: aes-256-gcm
+    password: "your-password"
+    udp: true
+
+  - name: "示例节点2"
+    type: vmess
+    server: server2.example.com
+    port: 443
+    uuid: your-uuid-here
+    alterId: 0
+    cipher: auto
+    udp: true
+
+  - name: "示例节点3"
+    type: trojan
+    server: server3.example.com
+    port: 443
+    password: "your-password"
+    udp: true
+    sni: server3.example.com
+
+# 代理组
+proxy-groups:
+  # 手动选择
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "AUTO"
+      - "示例节点1"
+      - "示例节点2"
+      - "示例节点3"
+      - "DIRECT"
+
+  # 自动选择
+  - name: "AUTO"
+    type: url-test
+    proxies:
+      - "示例节点1"
+      - "示例节点2"
+      - "示例节点3"
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
+
+  # 国外媒体
+  - name: "STREAMING"
+    type: select
+    proxies:
+      - "PROXY"
+      - "AUTO"
+      - "示例节点1"
+      - "示例节点2"
+      - "示例节点3"
+
+  # 国内直连
+  - name: "DOMESTIC"
+    type: select
+    proxies:
+      - "DIRECT"
+      - "PROXY"
+
+# 规则
+rules:
+  # 本地网络
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+
+  # GitHub
+  - DOMAIN-SUFFIX,github.com,PROXY
+  - DOMAIN-SUFFIX,githubusercontent.com,PROXY
+  - DOMAIN-SUFFIX,github.io,PROXY
+
+  # Google服务
+  - DOMAIN-SUFFIX,google.com,PROXY
+  - DOMAIN-SUFFIX,googleapis.com,PROXY
+  - DOMAIN-SUFFIX,gstatic.com,PROXY
+  - DOMAIN-SUFFIX,googleusercontent.com,PROXY
+
+  # 常用国外网站
+  - DOMAIN-SUFFIX,twitter.com,PROXY
+  - DOMAIN-SUFFIX,facebook.com,PROXY
+  - DOMAIN-SUFFIX,youtube.com,PROXY
+  - DOMAIN-SUFFIX,instagram.com,PROXY
+  - DOMAIN-SUFFIX,telegram.org,PROXY
+
+  # 流媒体
+  - DOMAIN-SUFFIX,netflix.com,STREAMING
+  - DOMAIN-SUFFIX,spotify.com,STREAMING
+
+  # NPM Registry（可选择代理或直连）
+  - DOMAIN-SUFFIX,npmjs.org,PROXY
+  - DOMAIN-SUFFIX,npmjs.com,PROXY
+
+  # Docker Hub
+  - DOMAIN-SUFFIX,docker.com,PROXY
+  - DOMAIN-SUFFIX,docker.io,PROXY
+
+  # Python PyPI（建议使用国内镜像，这里直连）
+  - DOMAIN-SUFFIX,pypi.org,DIRECT
+  - DOMAIN-SUFFIX,pythonhosted.org,DIRECT
+
+  # 国内常用网站
+  - DOMAIN-SUFFIX,baidu.com,DOMESTIC
+  - DOMAIN-SUFFIX,qq.com,DOMESTIC
+  - DOMAIN-SUFFIX,taobao.com,DOMESTIC
+  - DOMAIN-SUFFIX,tmall.com,DOMESTIC
+  - DOMAIN-SUFFIX,jd.com,DOMESTIC
+  - DOMAIN-SUFFIX,aliyun.com,DOMESTIC
+  - DOMAIN-SUFFIX,tencent.com,DOMESTIC
+
+  # 中国IP直连
+  - GEOIP,CN,DOMESTIC
+
+  # 其他流量走代理
+  - MATCH,PROXY
