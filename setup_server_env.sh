@@ -91,46 +91,58 @@ install_basic_tools() {
 install_python() {
     log_step "3. 安装Python环境..."
 
-    # 检查是否已安装
-    if command -v python3 &> /dev/null; then
-        PYTHON_VERSION=$(python3 --version | awk '{print $2}')
-        log_info "Python已安装: $PYTHON_VERSION"
-    else
-        # 添加deadsnakes PPA（用于安装最新Python）
-        add-apt-repository -y ppa:deadsnakes/ppa
-        apt update
+    # 检测系统版本
+    OS_VERSION=$(lsb_release -rs 2>/dev/null || echo "unknown")
 
-        # 安装Python 3.11
+    # 安装Python和pip（使用系统包管理器）
+    log_info "安装Python相关包..."
+    apt install -y \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        python3-setuptools \
+        python3-wheel
+
+    PYTHON_VERSION=$(python3 --version | awk '{print $2}')
+    log_info "Python已安装: $PYTHON_VERSION"
+
+    # 对于Ubuntu 24.04+，处理PEP 668保护机制
+    if [[ $(echo "$OS_VERSION >= 24.04" | bc -l 2>/dev/null || echo 0) -eq 1 ]] || [ -f /usr/lib/python*/EXTERNALLY-MANAGED ]; then
+        log_warn "检测到Python externally-managed环境保护"
+        log_info "使用系统包管理器安装Python包..."
+
+        # 安装常用Python包（通过apt）
         apt install -y \
-            python3.11 \
-            python3.11-dev \
-            python3.11-venv \
-            python3-pip
+            python3-setuptools \
+            python3-wheel \
+            python3-virtualenv \
+            pipx 2>/dev/null || true
 
-        # 设置Python3.11为默认
-        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-
-        log_info "Python 3.11 安装完成"
+        # 创建pip配置以允许break-system-packages（仅在必要时）
+        mkdir -p /root/.config/pip
+        cat > /root/.config/pip/pip.conf <<EOF
+[global]
+break-system-packages = true
+EOF
+        log_info "已配置pip允许系统级安装"
+    else
+        # 旧版本Ubuntu，直接升级pip
+        python3 -m pip install --upgrade pip 2>/dev/null || apt install -y python3-pip
     fi
-
-    # 升级pip
-    python3 -m pip install --upgrade pip
-
-    # 安装常用Python包
-    pip3 install --upgrade \
-        setuptools \
-        wheel \
-        virtualenv
 
     # 安装uv（现代Python包管理器）
     if ! command -v uv &> /dev/null; then
+        log_info "安装uv包管理器..."
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.cargo/env
+        export PATH="$HOME/.cargo/bin:$PATH"
         log_info "uv 包管理器安装完成"
+    else
+        log_info "uv已安装"
     fi
 
     python3 --version
-    pip3 --version
+    pip3 --version 2>/dev/null || log_warn "pip未安装或需要使用 python3 -m pip"
 }
 
 # 安装Node.js
@@ -396,8 +408,15 @@ install_project_dependencies() {
         log_info "检测到Python项目，安装依赖..."
         cd backend
 
-        # 使用国内镜像
-        pip3 install -i https://mirrors.aliyun.com/pypi/simple/ \
+        # 检查是否需要 --break-system-packages
+        PIP_FLAGS=""
+        if [ -f /usr/lib/python*/EXTERNALLY-MANAGED ]; then
+            PIP_FLAGS="--break-system-packages"
+            log_info "使用 --break-system-packages 标志"
+        fi
+
+        # 使用国内镜像安装
+        python3 -m pip install $PIP_FLAGS -i https://mirrors.aliyun.com/pypi/simple/ \
             flask>=3.0.0 \
             flask-cors>=4.0.0 \
             flask-sqlalchemy>=3.1.0 \
