@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================"
-echo "招聘系统 - 优化版启动（适用于4核3.7GB服务器）"
+echo "招聘系统 - 16GB服务器优化版启动"
 echo "========================================"
 echo
 
@@ -48,12 +48,14 @@ echo "========================================"
 echo "服务器配置信息"
 echo "========================================"
 echo "CPU核心: 4核"
-echo "内存: 3.7GB"
-echo "优化方案: Gevent异步模式"
-echo "Worker数量: 6个（针对4核优化）"
-echo "每个Worker连接数: 50"
-echo "理论最大并发: 300个连接"
-echo "实际推荐并发: 20-30人"
+echo "内存: 16GB"
+echo "优化方案: Gevent异步模式 + 大内存优化"
+echo "公共服务Worker: 20个"
+echo "管理后台Worker: 10个"
+echo "每个Worker连接数: 100"
+echo "理论最大并发: 2500个连接"
+echo "实际推荐并发: 60-80人（优化脚本+SQLite）"
+echo "            150-200人（升级MySQL后）"
 echo "========================================"
 echo
 echo "访问地址:"
@@ -63,40 +65,51 @@ echo
 echo "默认账号: admin / admin123"
 echo "重要: 首次登录后请立即修改密码！"
 echo
-echo "按 Ctrl+C 停止服务"
+echo "性能提示:"
+echo "1. 当前使用SQLite，建议升级到MySQL以获得更好性能"
+echo "2. 建议使用腾讯云COS存储简历文件，解决带宽瓶颈"
+echo "3. 建议配置Nginx反向代理和缓存"
+echo "详见: README_PERFORMANCE.md"
+echo
+echo "按 Ctrl+C 停止所有服务"
 echo "========================================"
 echo
 
 # 启动公共服务（5000端口）- 后台运行
 echo "启动公共服务 (端口 5000)..."
 if [ "$USE_GEVENT" = true ]; then
-    gunicorn -w 6 \
+    gunicorn -w 20 \
         -k gevent \
-        --worker-connections 50 \
+        --worker-connections 100 \
         -b 0.0.0.0:5000 \
         --access-logfile logs/access_5000.log \
         --error-logfile logs/error_5000.log \
         --daemon \
         --pid /tmp/recruitment_5000.pid \
         --timeout 120 \
-        --max-requests 1000 \
-        --max-requests-jitter 50 \
+        --max-requests 5000 \
+        --max-requests-jitter 100 \
+        --worker-tmp-dir /dev/shm \
         app:app
 else
-    gunicorn -w 8 \
+    gunicorn -w 16 \
         -b 0.0.0.0:5000 \
         --access-logfile logs/access_5000.log \
         --error-logfile logs/error_5000.log \
         --daemon \
         --pid /tmp/recruitment_5000.pid \
         --timeout 120 \
-        --max-requests 1000 \
-        --max-requests-jitter 50 \
+        --max-requests 5000 \
+        --max-requests-jitter 100 \
+        --worker-tmp-dir /dev/shm \
         app:app
 fi
 
 if [ $? -eq 0 ]; then
     echo "✓ 公共服务启动成功 (PID: $(cat /tmp/recruitment_5000.pid))"
+    echo "  - Workers: 20个"
+    echo "  - 最大连接: 2000"
+    echo "  - 日志: logs/access_5000.log"
 else
     echo "✗ 公共服务启动失败"
     exit 1
@@ -107,30 +120,34 @@ sleep 2
 
 # 启动管理后台（5001端口）- 前台运行
 echo "启动管理后台 (端口 5001)..."
+echo "  - Workers: 10个"
+echo "  - 最大连接: 500"
 echo "日志输出到终端，按 Ctrl+C 停止所有服务"
 echo
 
 # 捕获退出信号，清理后台进程
-trap "echo '正在停止服务...'; kill \$(cat /tmp/recruitment_5000.pid 2>/dev/null); rm -f /tmp/recruitment_5000.pid; echo '所有服务已停止'; exit 0" INT TERM
+trap "echo ''; echo '正在停止服务...'; kill \$(cat /tmp/recruitment_5000.pid 2>/dev/null); rm -f /tmp/recruitment_5000.pid; echo '所有服务已停止'; exit 0" INT TERM
 
 if [ "$USE_GEVENT" = true ]; then
-    gunicorn -w 4 \
+    gunicorn -w 10 \
         -k gevent \
-        --worker-connections 30 \
+        --worker-connections 50 \
         -b 0.0.0.0:5001 \
         --access-logfile - \
         --error-logfile - \
         --timeout 120 \
-        --max-requests 1000 \
-        --max-requests-jitter 50 \
+        --max-requests 5000 \
+        --max-requests-jitter 100 \
+        --worker-tmp-dir /dev/shm \
         admin_app:admin_app
 else
-    gunicorn -w 6 \
+    gunicorn -w 8 \
         -b 0.0.0.0:5001 \
         --access-logfile - \
         --error-logfile - \
         --timeout 120 \
-        --max-requests 1000 \
-        --max-requests-jitter 50 \
+        --max-requests 5000 \
+        --max-requests-jitter 100 \
+        --worker-tmp-dir /dev/shm \
         admin_app:admin_app
 fi
